@@ -40,9 +40,10 @@
         "data": {
           "domain": "domain",
           "native_currency": "Native Currency",
+          "enable_earn": "Enable Earn",
           "enable_balances": "Enable Balances",
           "enable_exchanges": "Enable Exchanges",
-          "enable_fundings": "Enable Fundings Balances",
+          "enable_fundings": "Activer les Soldes de Financement",
           "balances": "List of Balances",
           "exchanges": "List of Exchanges"
         }
