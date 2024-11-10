@@ -4,17 +4,19 @@ from enum import IntFlag
 
 # Domaine principal du composant
 DOMAIN = 'binance'
-DEFAULT_NAME = "Binance"
-DATA_BINANCE = "binance_cache"
+DEFAULT_NAME = "Binance_new"
+DATA_BINANCE = "binance_new_cache"
 
 # Clés de configuration
 CONF_API_SECRET = 'api_secret'
 CONF_NATIVE_CURRENCY = 'native_currency'
 CONF_BALANCES = 'balances'
 CONF_EXCHANGES = 'exchanges'
+CONF_ORDERS = 'orders'
 CONF_DOMAIN = "domain"
 CONF_ENABLE_BALANCES = 'enable_balances'
 CONF_ENABLE_EXCHANGES = 'enable_exchanges'
+CONF_ENABLE_ORDERS = 'enable_orders'
 CONF_ENABLE_EARN = 'enable_earn'
 CONF_ENABLE_FUNDING = 'enable_funding'
 DEFAULT_DOMAIN = "com"

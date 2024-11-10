@@ -13,8 +13,9 @@ from binance.client import Client
 from .constants import (DOMAIN, CONF_API_SECRET, CONF_DOMAIN, DEFAULT_DOMAIN,
                          CONF_NATIVE_CURRENCY, DEFAULT_CURRENCY,
                          CONF_ENABLE_BALANCES, CONF_ENABLE_FUNDING,
-                         CONF_ENABLE_EXCHANGES)
+                         CONF_ENABLE_EXCHANGES, CONF_ENABLE_ORDERS)
 from .binance.binance_sensor import BinanceSensor
+from functools import partial
 
 _LOGGER = logging.getLogger(__name__)
 UPDATE_INTERVAL = timedelta(minutes=1)
@@ -23,7 +24,7 @@ SCAN_INTERVAL = timedelta(minutes=1)
 class BinanceCoordinator(DataUpdateCoordinator):
     """Coordinator to retrieve data from Binance."""
 
-    def __init__(self, hass: HomeAssistant, entry, configured_balances, configured_exchanges):
+    def __init__(self, hass: HomeAssistant, entry, configured_balances, configured_exchanges, configured_orders):
         """Initialize the coordinator."""
         self.hass = hass
         self.entry = entry
@@ -33,16 +34,17 @@ class BinanceCoordinator(DataUpdateCoordinator):
         self.conf_name = entry.data.get(CONF_NAME)
         self.native_currency = entry.data.get(CONF_NATIVE_CURRENCY, DEFAULT_CURRENCY)
         self.enabled_feature = {feature: entry.data.get(feature_key) for feature, feature_key in 
-                                [('balance', CONF_ENABLE_BALANCES), ('exchanges', CONF_ENABLE_EXCHANGES), ('funding', CONF_ENABLE_FUNDING)]}
+                                [('balance', CONF_ENABLE_BALANCES), ('exchanges', CONF_ENABLE_EXCHANGES), ('orders', CONF_ENABLE_ORDERS), ('funding', CONF_ENABLE_FUNDING)]}
         self.client = None
-        self.balances,  self.funding_balances, self.tickers= ([], [],  {})
+        self.balances,  self.funding_balances, self.tickers, self.orders = ([], [], {}, {})
         self.configured_balances = self._parse_configured_items(configured_balances)
         self.configured_exchanges = self._parse_configured_items(configured_exchanges)
+        self.configured_orders = self._parse_configured_items(configured_orders)
 
         super().__init__(
             hass,
             _LOGGER,
-            name="Binance Coordinator",
+            name="New Binance Coordinator",
             update_interval=SCAN_INTERVAL,
         )
 
@@ -109,12 +111,17 @@ class BinanceCoordinator(DataUpdateCoordinator):
         """Device information for exchanges."""
         return self.get_device_info("exchanges", "Exchanges")
 
+    @property
+    def device_info_orders(self) -> DeviceInfo:
+        """Device information for orders."""
+        return self.get_device_info("orders", "Orders")
     
     async def _update_feature_data(self, feature_name, update_method):
         """Update feature data based on enabled feature."""
         if self.enabled_feature.get(feature_name):
             try:
                 await update_method()
+            
             except Exception as e:
                 _LOGGER.error(f"Error updating {feature_name}: {e}")
 
@@ -125,11 +132,13 @@ class BinanceCoordinator(DataUpdateCoordinator):
         try:
             await self._update_feature_data('balance', self.update_balances)
             await self._update_feature_data('exchanges', self.update_tickers)
+            await self._update_feature_data('orders', self.update_orders)
             await self._update_feature_data('funding', self.update_funding_balances)
 
             return {
                 "balances": self.balances,
                 "tickers": self.tickers,
+                "orders": self.orders,
                 "funding_balances": self.funding_balances
             }
         except Exception as e:
@@ -165,6 +174,16 @@ class BinanceCoordinator(DataUpdateCoordinator):
         self.tickers = {ticker['symbol']: ticker for ticker in prices
                         if not self.configured_exchanges or ticker['symbol'] in self.configured_exchanges}
 
+    async def update_orders(self):
+        """Update order data."""
+        if self.client is None:
+            await self.init_client()
+        for symbol in self.configured_orders:
+            _LOGGER.error(f"HINT {self.configured_orders}: {symbol}")
+            all_orders = await self.hass.async_add_executor_job(None, self.client.get_all_orders(symbol = symbol,limit=2), kwarg=True)
+            
+            #self.orders = {order['symbol']: all_orders
+            #            if not self.configured_orders or order['symbol'] in self.configured_orders}
 
     async def update_funding_balances(self):
         """Méthode pour mettre à jour les soldes Funding."""

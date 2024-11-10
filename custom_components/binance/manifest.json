@@ -1,7 +1,7 @@
 {
   "domain": "binance",
-  "name": "Binance",
-  "codeowners": ["@YouNesta"],
+  "name": "Binance_new",
+  "codeowners": ["@JuMi2006"],
   "config_flow": true,
   "dependencies": [],
   "documentation": "https://github.com/YouNesta/homeassistant-binance",

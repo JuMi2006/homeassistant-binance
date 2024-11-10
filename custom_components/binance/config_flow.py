@@ -2,7 +2,7 @@ import voluptuous as vol
 from homeassistant import config_entries
 from homeassistant.const import CONF_NAME, CONF_API_KEY
 import homeassistant.helpers.config_validation as cv
-from .constants import DOMAIN, CONF_API_SECRET,CONF_DOMAIN, CONF_NATIVE_CURRENCY, CONF_BALANCES, CONF_EXCHANGES, CONF_ENABLE_BALANCES, CONF_ENABLE_EXCHANGES, CONF_ENABLE_EARN, CONF_ENABLE_FUNDING
+from .constants import DOMAIN, CONF_API_SECRET,CONF_DOMAIN, CONF_NATIVE_CURRENCY, CONF_BALANCES, CONF_EXCHANGES, CONF_ORDERS, CONF_ENABLE_BALANCES, CONF_ENABLE_EXCHANGES, CONF_ENABLE_ORDERS, CONF_ENABLE_EARN, CONF_ENABLE_FUNDING
 from homeassistant.core import callback
 
 class BinanceConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
@@ -23,6 +23,8 @@ class BinanceConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 return await self.async_step_balances()
             elif user_input.get(CONF_ENABLE_EXCHANGES):
                 return await self.async_step_exchanges()
+            elif user_input.get(CONF_ENABLE_ORDERS):
+                return await self.async_step_orders()
             else:
                 return self.async_create_entry(title=user_input[CONF_NAME], data=user_input)
 
@@ -34,6 +36,7 @@ class BinanceConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             vol.Optional(CONF_NATIVE_CURRENCY, default="USDT"): cv.string,
             vol.Optional(CONF_ENABLE_BALANCES, default=False): cv.boolean,
             vol.Optional(CONF_ENABLE_EXCHANGES, default=False): cv.boolean,
+            vol.Optional(CONF_ENABLE_ORDERS, default=False): cv.boolean,
             vol.Optional(CONF_ENABLE_FUNDING, default=False): cv.boolean,
             vol.Optional(CONF_ENABLE_EARN, default=False): cv.boolean,
         })
@@ -75,7 +78,21 @@ class BinanceConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             }),
             errors=errors
         )
-        
+    async def async_step_orders(self, user_input=None):
+        """Handle the orders step."""
+        errors = {}
+        if user_input is not None:
+            self.context['user_input'].update(user_input)
+            return self.async_create_entry(title=self.context['user_input'][CONF_NAME], data=self.context['user_input'])
+
+        return self.async_show_form(
+            step_id="orders",
+            data_schema=vol.Schema({
+                vol.Required(CONF_ORDERS): cv.string,
+            }),
+            errors=errors
+        )
+
     @callback
     def async_get_options_flow(config_entry):
         return BinanceOptionsFlowHandler(config_entry)
@@ -108,6 +125,8 @@ class BinanceOptionsFlowHandler(config_entries.OptionsFlow):
             vol.Required(CONF_BALANCES, default=current_config.get(CONF_BALANCES, "")): cv.string,
             vol.Optional(CONF_ENABLE_EXCHANGES, default=current_config.get(CONF_ENABLE_EXCHANGES, False)): cv.boolean,
             vol.Required(CONF_EXCHANGES, default=current_config.get(CONF_EXCHANGES, "")): cv.string,
+            vol.Optional(CONF_ENABLE_ORDERS, default=current_config.get(CONF_ENABLE_ORDERS, False)): cv.boolean,
+            vol.Required(CONF_ORDERS, default=current_config.get(CONF_ORDERS, "")): cv.string,
             vol.Optional(CONF_ENABLE_EARN, default=current_config.get(CONF_ENABLE_EARN, False)): cv.boolean,
             vol.Optional(CONF_ENABLE_FUNDING, default=current_config.get(CONF_ENABLE_FUNDING, False)): cv.boolean,
         })

@@ -6,6 +6,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.config_entries import ConfigEntry
 from .binance.binance_sensor import BinanceSensor
 from .binance.binance_exchange_sensor import BinanceExchangeSensor
+from .binance.binance_order_sensor import BinanceOrderSensor
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -57,6 +58,15 @@ async def async_setup_entry(hass: HomeAssistant, config: ConfigEntry, async_add_
                 _LOGGER.error(f"Invalid ticker data for symbol {symbol}: {ticker}")
                 continue
             sensor = BinanceExchangeSensor(coordinator, conf_name, ticker)
+            if sensor.is_valid:
+                sensors.append(sensor)
+        
+        orders = coordinator.data.get("orders", {})
+        for symbol, order in orders.items():
+            if not isinstance(order, dict) or "all_orders" not in order:
+                _LOGGER.error(f"Invalid order data for symbol {symbol}: {order}")
+                continue
+            sensor = BinanceOrderSensor(coordinator, conf_name, order)
             if sensor.is_valid:
                 sensors.append(sensor)
 

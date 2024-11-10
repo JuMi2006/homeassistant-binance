@@ -4,7 +4,7 @@ import homeassistant.helpers.config_validation as cv
 from homeassistant.core import HomeAssistant
 import logging
 from datetime import timedelta
-from .constants import DOMAIN, UNDO_UPDATE_LISTENER, SERVICE_WITHDRAW, CONF_BALANCES, CONF_EXCHANGES
+from .constants import DOMAIN, UNDO_UPDATE_LISTENER, SERVICE_WITHDRAW, CONF_BALANCES, CONF_EXCHANGES, CONF_ORDERS
 from homeassistant.config_entries import  ConfigEntry
 from homeassistant.helpers import device_registry as dr
 from homeassistant import config_entries 
@@ -49,7 +49,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
         hass, 
         entry, 
         configured_balances=entry.data.get(CONF_BALANCES),
-        configured_exchanges=entry.data.get(CONF_EXCHANGES)
+        configured_exchanges=entry.data.get(CONF_EXCHANGES),
+        configured_orders=entry.data.get(CONF_ORDERS)
     )
 
 

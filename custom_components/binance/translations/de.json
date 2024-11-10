@@ -12,7 +12,8 @@
           "domain": "domain",
           "native_currency": "Heimatwährung (Standard: USDT)",
           "enable_balances": "Salden aktivieren",
-          "enable_exchanges": "Handel aktivieren"
+          "enable_exchanges": "Handel aktivieren",
+          "enable_orders": "Order aktivieren"
         }
       },
       "balances": {
@@ -27,7 +28,14 @@
         "description": "Konfigurieren Sie Ihre Handelseinstellungen.",
         "data": {
           "exchanges": "Handelsdetails"
+        },
+      "orders": {
+        "title": "Order-Konfiguration",
+        "description": "Konfigurieren Sie Ihre Order-Einstellungen.",
+        "data": {
+          "orders": "Orderdetails"
         }
+      }
       }
     }
   },
@@ -37,6 +45,7 @@
       "native_currency": "Heimatwährung",
       "balances": "Liste der Salden",
       "exchanges": "Liste der Handel",
+      "orders": "Liste der Orders",
       "domain": "domain",
       "enable_balances": "Salden aktivieren",
       "enable_exchanges": "Handel aktivieren"
